@@ -7,8 +7,10 @@ Works with any language, framework, or architecture.
 ## Install
 
 ```bash
-git clone https://github.com/your-org/ai-dev-team.git /tmp/ai-dev-team
-/tmp/ai-dev-team/install.sh /path/to/your-project
+git clone git@github-personal:saaamuu8/ai-dev-team.git /tmp/ai-dev-team
+
+# Después instalar
+/tmp/ai-dev-team/install.sh .
 ```
 
 This copies all agents to `.claude/agents/` inside your project. Claude Code detects them automatically.
