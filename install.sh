@@ -18,13 +18,20 @@ fi
 mkdir -p "$TARGET/.claude/agents"
 
 count=0
-for agent in "$AGENTS_DIR"/*.md; do
+while IFS= read -r -d '' agent; do
   [ -f "$agent" ] || continue
   cp "$agent" "$TARGET/.claude/agents/"
   name=$(basename "$agent" .md)
-  echo "  ✓ $name"
+  # Show domain/agent-name
+  rel="${agent#$AGENTS_DIR/}"
+  domain=$(dirname "$rel")
+  if [ "$domain" = "." ]; then
+    echo "  ✓ $name"
+  else
+    echo "  ✓ [$domain] $name"
+  fi
   count=$((count + 1))
-done
+done < <(find "$AGENTS_DIR" -name "*.md" -print0 | sort -z)
 
 echo ""
 echo "✓ Installed $count agents into $TARGET/.claude/agents/"
