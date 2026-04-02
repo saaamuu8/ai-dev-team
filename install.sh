@@ -4,6 +4,7 @@ set -e
 TARGET="${1:-.}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 AGENTS_DIR="$SCRIPT_DIR/agents"
+SKILLS_DIR="$SCRIPT_DIR/skills"
 
 if [ ! -d "$TARGET" ]; then
   echo "Error: Target directory '$TARGET' does not exist."
@@ -35,6 +36,24 @@ done < <(find "$AGENTS_DIR" -name "*.md" -print0 | sort -z)
 
 echo ""
 echo "✓ Installed $count agents into $TARGET/.claude/agents/"
+
+# Install skills
+skill_count=0
+if [ -d "$SKILLS_DIR" ]; then
+  while IFS= read -r -d '' skill; do
+    [ -f "$skill" ] || continue
+    # Each skill lives in its own folder; preserve that folder under .claude/skills/
+    rel="${skill#$SKILLS_DIR/}"
+    skill_folder=$(dirname "$rel")
+    mkdir -p "$TARGET/.claude/skills/$skill_folder"
+    cp "$skill" "$TARGET/.claude/skills/$skill_folder/"
+    echo "  ✓ [$skill_folder] $(basename "$skill")"
+    skill_count=$((skill_count + 1))
+  done < <(find "$SKILLS_DIR" -name "*.md" -print0 | sort -z)
+  echo ""
+  echo "✓ Installed $skill_count skill(s) into $TARGET/.claude/skills/"
+fi
+
 echo ""
 echo "Usage:"
 echo "  cd $TARGET"
