@@ -47,7 +47,7 @@ if [ -d "$SKILLS_DIR" ]; then
     skill_folder=$(dirname "$rel")
     mkdir -p "$TARGET/.claude/skills/$skill_folder"
     cp "$skill" "$TARGET/.claude/skills/$skill_folder/"
-    echo "  ✓ [$skill_folder] $(basename "$skill")"
+    echo "  ✓ $skill_folder"
     skill_count=$((skill_count + 1))
   done < <(find "$SKILLS_DIR" -name "*.md" -print0 | sort -z)
   echo ""
