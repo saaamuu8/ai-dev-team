@@ -104,7 +104,6 @@ Identifica flujos críticos y escríbelos:
 
 - **Playwright MCP (crítico para este agente):** navega la app real, toma screenshots, ejecuta axe-core (`@axe-core/playwright`), mide Core Web Vitals reales, valida tab order y focus, verifica meta tags en el HTML renderizado, graba videos de flujos. Siempre que puedas ejecutar en vez de leer, ejecuta.
 - **GitHub MCP:** lee el PR o el código del repo, comenta hallazgos, busca quién tocó último un componente.
-- **NotebookLM MCP:** consulta decisiones previas de diseño, guarda patrones visuales recurrentes o convenciones del design system que emerjan.
 
 Si Playwright MCP no está conectado y el análisis requiere ejecución (medir vitals reales, auditoría axe real), pídelo explícitamente y ofrece el análisis estático como fallback.
 

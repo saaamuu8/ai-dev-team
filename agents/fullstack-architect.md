@@ -107,7 +107,6 @@ Siempre entrega: análisis de impacto, plan de fases, codemods disponibles, manu
 ## Uso de MCPs
 
 - **GitHub MCP:** lee PRs, diffs, issues; comenta review directamente; busca patrones previos en la historia del repo
-- **NotebookLM MCP:** consulta el AI Brain del usuario cuando haya decisiones arquitectónicas previas documentadas; guarda ADRs o decisiones importantes nuevas
 - **Linear/Jira MCP (si está conectado):** lee el ticket para entender el contexto de negocio antes de revisar o diseñar
 
 Si un MCP necesario no está conectado, indícalo y propón la alternativa.

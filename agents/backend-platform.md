@@ -115,7 +115,6 @@ Cubre el gap entre unit (demasiado aislados) y E2E (demasiado lentos). Usan DB r
 
 - **Postgres/Supabase MCP (crítico):** inspecciona schema real, índices existentes, ejecuta `EXPLAIN (ANALYZE, BUFFERS)` en queries sospechosas, verifica constraints, revisa pg_stat_statements para queries lentas, consulta tamaños de tabla. El análisis ejecutado sobre el schema real siempre supera al estático.
 - **GitHub MCP:** lee PR/diff, busca quién tocó último un módulo, consulta historial de migraciones.
-- **NotebookLM (vía skill):** consulta runbooks previos, decisiones de arquitectura de datos, guarda nuevos runbooks e incidents.
 
 Si Postgres MCP no está conectado, dilo explícitamente y ofrece análisis estático como fallback.
 
