@@ -16,6 +16,7 @@ if [ ! -d "$AGENTS_DIR" ]; then
   exit 1
 fi
 
+# ─── Agents ───────────────────────────────────────────────
 mkdir -p "$TARGET/.claude/agents"
 
 count=0
@@ -23,7 +24,6 @@ while IFS= read -r -d '' agent; do
   [ -f "$agent" ] || continue
   cp "$agent" "$TARGET/.claude/agents/"
   name=$(basename "$agent" .md)
-  # Show domain/agent-name
   rel="${agent#$AGENTS_DIR/}"
   domain=$(dirname "$rel")
   if [ "$domain" = "." ]; then
@@ -35,14 +35,17 @@ while IFS= read -r -d '' agent; do
 done < <(find "$AGENTS_DIR" -name "*.md" -print0 | sort -z)
 
 echo ""
-echo "✓ Installed $count agents into $TARGET/.claude/agents/"
+if [ "$count" -eq 0 ]; then
+  echo "⚠ No agents found in $AGENTS_DIR"
+else
+  echo "✓ Installed $count agents into $TARGET/.claude/agents/"
+fi
 
-# Install skills
+# ─── Skills ───────────────────────────────────────────────
 skill_count=0
 if [ -d "$SKILLS_DIR" ]; then
   while IFS= read -r -d '' skill; do
     [ -f "$skill" ] || continue
-    # Each skill lives in its own folder; preserve that folder under .claude/skills/
     rel="${skill#$SKILLS_DIR/}"
     skill_folder=$(dirname "$rel")
     mkdir -p "$TARGET/.claude/skills/$skill_folder"
@@ -54,9 +57,57 @@ if [ -d "$SKILLS_DIR" ]; then
   echo "✓ Installed $skill_count skill(s) into $TARGET/.claude/skills/"
 fi
 
+# ─── MCP Servers (project-scoped) ─────────────────────────
 echo ""
-echo "Usage:"
+echo "Configuring project-scoped MCP servers..."
+
+if ! command -v claude &> /dev/null; then
+  echo "  ⚠ 'claude' CLI not found, skipping MCP setup."
+  echo "    Install Claude Code, then run the MCP commands manually."
+else
+  pushd "$TARGET" > /dev/null
+
+  # Stripe (each project = its own Stripe account)
+  if claude mcp get stripe &> /dev/null; then
+    echo "  • stripe already configured, skipping"
+  else
+    if claude mcp add --transport http --scope project stripe https://mcp.stripe.com 2>/dev/null; then
+      echo "  ✓ stripe (authenticate with /mcp inside Claude Code)"
+    else
+      echo "  ✗ stripe failed to add — run manually:"
+      echo "    claude mcp add --transport http --scope project stripe https://mcp.stripe.com"
+    fi
+  fi
+
+  # Postgres — only if DATABASE_URL is in .env
+  if [ -f .env ] && grep -q "^DATABASE_URL=" .env; then
+    if claude mcp get postgres &> /dev/null; then
+      echo "  • postgres already configured, skipping"
+    else
+      if claude mcp add --scope project postgres -- npx -y @bytebase/dbhub --dsn "\${DATABASE_URL}" 2>/dev/null; then
+        echo "  ✓ postgres (uses \${DATABASE_URL} from .env)"
+      else
+        echo "  ✗ postgres failed to add — run manually:"
+        echo "    claude mcp add --scope project postgres -- npx -y @bytebase/dbhub --dsn \"\\\${DATABASE_URL}\""
+      fi
+    fi
+  else
+    echo "  ⚠ DATABASE_URL not found in .env, skipping postgres MCP"
+    echo "    Add it later with:"
+    echo "    claude mcp add --scope project postgres -- npx -y @bytebase/dbhub --dsn \"\\\${DATABASE_URL}\""
+  fi
+
+  popd > /dev/null
+fi
+
+# ─── Final hint ───────────────────────────────────────────
+echo ""
+echo "Done. Next steps:"
 echo "  cd $TARGET"
-echo "  claude \"Audit the repository\" --agent architect"
-echo "  claude \"Review my changes\" --agent code-reviewer"
-echo "  claude \"Find security vulnerabilities\" --agent security"
+echo "  claude        # then run /mcp to authenticate Stripe (and any pending OAuth)"
+echo ""
+echo "Available agent configurations:"
+echo "  fullstack-architect   — architecture, code review, API contracts, type safety, docs, migrations"
+echo "  frontend-quality      — a11y, design system, performance, SEO, E2E"
+echo "  backend-platform      — DB, integrations, events, infra, observability, integration tests"
+echo "  critical-systems      — security, auth, billing"
